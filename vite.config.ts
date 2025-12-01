@@ -108,8 +108,6 @@ export default defineConfig({
       },
       // External dependencies
       external: [],
-      // Output formats
-      formats: ['es', 'cjs'],
     },
     
     // Asset inlining threshold
@@ -134,6 +132,9 @@ export default defineConfig({
     include: [
       'react',
       'react-dom',
+      'react/jsx-runtime',
+      '@emotion/react',
+      '@emotion/styled',
       'framer-motion',
       'lucide-react',
       'clsx',
@@ -199,14 +200,6 @@ export default defineConfig({
     legalComments: 'none',
   },
 
-  // Preview configuration
-  // Configuration for the preview server
-  preview: {
-    port: 4173,
-    host: true,
-    open: false,
-  },
-
   // Test configuration
   test: {
     globals: true,
@@ -228,67 +221,5 @@ export default defineConfig({
   // Experimental features
   experimentalFeatures: {
     hmrPartialAccept: true,
-  },
-
-  // Performance hints
-  server: {
-    fs: {
-      // Allow serving files from one level up to the project root
-      allow: ['..'],
-    },
-  },
-
-  // Dep optimization
-  optimizeDeps: {
-    include: [
-      // Core React ecosystem
-      'react/jsx-runtime',
-      'react-dom/client',
-      
-      // UI libraries
-      '@radix-ui/react-tabs',
-      '@radix-ui/react-dialog', 
-      '@radix-ui/react-select',
-      '@radix-ui/react-slider',
-      '@radix-ui/react-switch',
-      '@radix-ui/react-progress',
-      '@radix-ui/react-label',
-      
-      // Animation library
-      'framer-motion',
-      
-      // Utility libraries
-      'clsx',
-      'tailwind-merge',
-      'class-variance-authority',
-      
-      // State management
-      'zustand',
-      
-      // Icons
-      'lucide-react',
-      
-      // Form handling
-      'react-hook-form',
-      '@hookform/resolvers',
-      'zod',
-      
-      // Date utilities
-      'date-fns',
-      
-      // File handling
-      'file-saver',
-      '@types/file-saver',
-    ],
-    
-    exclude: [
-      // Exclude node-only modules
-      'fs',
-      'path',
-      'crypto',
-      
-      // Exclude development tools
-      'vite-plugin-pwa',
-    ],
   },
 });
