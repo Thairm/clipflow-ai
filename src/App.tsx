@@ -1,5 +1,6 @@
-// Enhanced Main App Component - ClipFlow AI
+// Enhanced Main App Component - ClipFlow AI with Homepage
 import React, { useState, useEffect } from 'react';
+import Homepage from './components/Homepage';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Video, 
@@ -308,8 +309,21 @@ const VideoPreview: React.FC = () => {
   );
 };
 
-// Main ClipFlow AI Application
+// Main ClipFlow AI Application with Homepage
 const ClipFlowAI: React.FC = () => {
+  const [currentView, setCurrentView] = useState<'homepage' | 'app'>('homepage');
+
+  // If we're on the homepage, show that
+  if (currentView === 'homepage') {
+    return <Homepage onLaunchApp={() => setCurrentView('app')} />;
+  }
+
+  // If we're in the app, show the application interface
+  return <AppInterface onBackToHome={() => setCurrentView('homepage')} />;
+};
+
+// Application Interface Component (original ClipFlowAI logic)
+const AppInterface: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) => {
   const {
     currentProject,
     projects,
@@ -353,7 +367,7 @@ const ClipFlowAI: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Enhanced Header */}
+      {/* Enhanced Header with Back Button */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
@@ -374,6 +388,9 @@ const ClipFlowAI: React.FC = () => {
 
             {/* Header Actions */}
             <div className="flex items-center gap-3">
+              <Button variant="outline" onClick={onBackToHome} size="sm">
+                ← Back to Home
+              </Button>
               {currentProject ? (
                 <Badge variant="secondary" className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
