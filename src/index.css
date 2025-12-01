@@ -1,0 +1,465 @@
+/* Enhanced CSS Variables for ClipFlow AI */
+:root {
+  /* Base Colors - Dark Professional Theme */
+  --background: 0 0% 3.9%; /* #0a0a0a */
+  --foreground: 0 0% 98%; /* #fafafa */
+  --card: 0 0% 3.9%; /* #0a0a0a */
+  --card-foreground: 0 0% 98%; /* #fafafa */
+  --popover: 0 0% 3.9%; /* #0a0a0a */
+  --popover-foreground: 0 0% 98%; /* #fafafa */
+  --primary: 221.2 83.2% 53.3%; /* #007BFF */
+  --primary-foreground: 210 40% 98%; /* #fafafa */
+  --secondary: 217.2 32.6% 17.5%; /* #1f1f1f */
+  --secondary-foreground: 210 40% 98%; /* #fafafa */
+  --muted: 217.2 32.6% 17.5%; /* #1f1f1f */
+  --muted-foreground: 215 20.2% 65.1%; /* #a1a1aa */
+  --accent: 217.2 32.6% 17.5%; /* #1f1f1f */
+  --accent-foreground: 210 40% 98%; /* #fafafa */
+  --destructive: 0 62.8% 30.6%; /* #dc2626 */
+  --destructive-foreground: 210 40% 98%; /* #fafafa */
+  --border: 217.2 32.6% 17.5%; /* #1f1f1f */
+  --input: 217.2 32.6% 17.5%; /* #1f1f1f */
+  --ring: 221.2 83.2% 53.3%; /* #007BFF */
+  --radius: 0.75rem;
+
+  /* Video Editor Specific Colors */
+  --editor-panel: 0 0% 7%; /* #121212 */
+  --editor-panel-light: 0 0% 12%; /* #1f1f1f */
+  --timeline-bg: 0 0% 4%; /* #0a0a0a */
+  --timeline-grid: 0 0% 15%; /* #262626 */
+  --clip-bg: 0 0% 20%; /* #333333 */
+  --clip-bg-hover: 0 0% 25%; /* #404040 */
+  --clip-selected: 221.2 83.2% 53.3%; /* #007BFF */
+  --waveform-color: 142.1 76.2% 36.3%; /* #22c55e */
+  --playhead-color: 221.2 83.2% 53.3%; /* #007BFF */
+  
+  /* AI Feature Colors */
+  --ai-accent: 262.1 83.3% 57.8%; /* #8b5cf6 */
+  --ai-highlight: 142.1 76.2% 36.3%; /* #22c55e */
+  --ai-warning: 47.9 95.8% 53.1%; /* #eab308 */
+  --ai-error: 0 84.2% 60.2%; /* #ef4444 */
+
+  /* Success/Error Colors */
+  --success: 142.1 76.2% 36.3%; /* #22c55e */
+  --success-foreground: 0 0% 98%; /* #fafafa */
+  --warning: 47.9 95.8% 53.1%; /* #eab308 */
+  --warning-foreground: 0 0% 98%; /* #fafafa */
+  --info: 221.2 83.2% 53.3%; /* #007BFF */
+  --info-foreground: 0 0% 98%; /* #fafafa */
+
+  /* Text Colors */
+  --text-primary: 0 0% 98%; /* #fafafa */
+  --text-secondary: 215 20.2% 65.1%; /* #a1a1aa */
+  --text-muted: 215 13.8% 34.1%; /* #71717a */
+  
+  /* Animations */
+  --animation-duration: 0.2s;
+  --animation-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* Light Mode (for system preference) */
+@media (prefers-color-scheme: light) {
+  :root {
+    --background: 0 0% 100%; /* #ffffff */
+    --foreground: 0 0% 3.9%; /* #0a0a0a */
+    --card: 0 0% 100%; /* #ffffff */
+    --card-foreground: 0 0% 3.9%; /* #0a0a0a */
+    --popover: 0 0% 100%; /* #ffffff */
+    --popover-foreground: 0 0% 3.9%; /* #0a0a0a */
+    --primary: 221.2 83.2% 53.3%; /* #007BFF */
+    --primary-foreground: 210 40% 98%; /* #fafafa */
+    --secondary: 210 40% 96%; /* #f5f5f5 */
+    --secondary-foreground: 222.2 84% 4.9%; /* #0a0a0a */
+    --muted: 210 40% 96%; /* #f5f5f5 */
+    --muted-foreground: 215.4 16.3% 46.9%; /* #71717a */
+    --accent: 210 40% 96%; /* #f5f5f5 */
+    --accent-foreground: 222.2 84% 4.9%; /* #0a0a0a */
+    --destructive: 0 84.2% 60.2%; /* #ef4444 */
+    --destructive-foreground: 210 40% 98%; /* #fafafa */
+    --border: 214.3 31.8% 91.4%; /* #d4d4d8 */
+    --input: 214.3 31.8% 91.4%; /* #d4d4d8 */
+    --ring: 221.2 83.2% 53.3%; /* #007BFF */
+  }
+}
+
+/* Global Styles */
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground));
+  border-radius: 4px;
+  transition: background-color var(--animation-duration);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--accent-foreground));
+}
+
+/* Video Editor Specific Styles */
+.editor-timeline {
+  background: hsl(var(--timeline-bg));
+  border-top: 1px solid hsl(var(--border));
+}
+
+.timeline-track {
+  background: transparent;
+  border-bottom: 1px solid hsl(var(--timeline-grid));
+  min-height: 80px;
+  position: relative;
+}
+
+.timeline-clip {
+  background: hsl(var(--clip-bg));
+  border: 1px solid hsl(var(--border));
+  border-radius: 4px;
+  position: absolute;
+  top: 8px;
+  height: 64px;
+  transition: all var(--animation-duration) var(--animation-easing);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.timeline-clip:hover {
+  background: hsl(var(--clip-bg-hover));
+  border-color: hsl(var(--primary));
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.timeline-clip.selected {
+  border-color: hsl(var(--clip-selected));
+  box-shadow: 0 0 0 2px hsla(var(--clip-selected), 0.3);
+}
+
+.timeline-clip .clip-thumbnail {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.8;
+}
+
+.timeline-clip .clip-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  padding: 8px;
+  color: white;
+  font-size: 12px;
+}
+
+/* Waveform Visualization */
+.waveform {
+  height: 60px;
+  width: 100%;
+  background: transparent;
+  position: relative;
+}
+
+.waveform::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: hsl(var(--waveform-color));
+  transform: translateY(-50%);
+}
+
+/* Playhead */
+.playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: hsl(var(--playhead-color));
+  z-index: 10;
+  pointer-events: none;
+  box-shadow: 0 0 0 1px rgba(0, 123, 255, 0.3);
+}
+
+.playhead::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: -6px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid hsl(var(--playhead-color));
+}
+
+/* AI Feature Animations */
+@keyframes ai-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+.ai-feature-highlight {
+  animation: ai-pulse 2s ease-in-out infinite;
+}
+
+@keyframes ai-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px hsla(var(--ai-accent), 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px hsla(var(--ai-accent), 0.6), 0 0 30px hsla(var(--ai-accent), 0.3);
+  }
+}
+
+.ai-glow-effect {
+  animation: ai-glow 3s ease-in-out infinite;
+}
+
+/* Loading Animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Utility Classes */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Video Container */
+.video-container {
+  position: relative;
+  background: black;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 16/9;
+}
+
+.video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Timeline Grid */
+.timeline-grid {
+  background-image: 
+    linear-gradient(to right, hsl(var(--timeline-grid)) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--timeline-grid)) 1px, transparent 1px);
+  background-size: 20px 80px;
+  position: relative;
+}
+
+.timeline-ruler {
+  background: hsl(var(--editor-panel));
+  border-bottom: 1px solid hsl(var(--border));
+  height: 30px;
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  color: hsl(var(--text-secondary));
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.timeline-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: hsl(var(--text-muted));
+  font-size: 9px;
+  color: hsl(var(--text-muted));
+  padding-top: 2px;
+}
+
+/* Effects Panel */
+.effect-controls {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: var(--shadow-lg);
+}
+
+/* Caption Styling */
+.caption-text {
+  text-shadow: 
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.caption-text.small {
+  font-size: 14px;
+}
+
+.caption-text.large {
+  font-size: 24px;
+}
+
+/* Export Progress */
+.export-progress {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+  overflow: hidden;
+  height: 8px;
+}
+
+.export-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary-foreground)));
+  transition: width 0.3s ease;
+}
+
+/* Notification Styles */
+.notification {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: var(--shadow-xl);
+  max-width: 400px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.notification.success {
+  border-left: 4px solid hsl(var(--success));
+}
+
+.notification.warning {
+  border-left: 4px solid hsl(var(--warning));
+}
+
+.notification.error {
+  border-left: 4px solid hsl(var(--destructive));
+}
+
+.notification.info {
+  border-left: 4px solid hsl(var(--info));
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .timeline-clip {
+    height: 48px;
+    top: 16px;
+  }
+  
+  .caption-text {
+    font-size: 16px;
+  }
+  
+  .caption-text.large {
+    font-size: 20px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 0 0% 20%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 90%;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  .timeline-clip,
+  .playhead,
+  .ai-feature-highlight,
+  .ai-glow-effect {
+    display: none;
+  }
+  
+  body {
+    background: white;
+    color: black;
+  }
+}
