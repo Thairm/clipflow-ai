@@ -31,7 +31,6 @@ import HormoziCaptionsPanel from './components/HormoziCaptionsPanel';
 import ViralShortsPanel from './components/ViralShortsPanel';
 import ExportSystem from './components/ExportSystem';
 import { formatDuration } from './lib/utils';
-import './App.css';
 
 // Enhanced AI Features Dashboard
 const AIFeaturesDashboard: React.FC = () => {
