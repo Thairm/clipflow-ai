@@ -63,14 +63,8 @@ export default defineConfig({
     // Target configuration for browser compatibility
     target: 'esnext',
     
-    // Minification configuration
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-    },
+   // Minification configuration
+minify: 'esbuild',
     
     // Rollup configuration
     rollupOptions: {
