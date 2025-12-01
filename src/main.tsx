@@ -6,8 +6,8 @@ import './index.css';
 
 // Performance monitoring setup
 if (process.env.NODE_ENV === 'development') {
-  // Enable React DevTools
-  import('react-devtools');
+  // Enable React DevTools (commented out - module not installed)
+  // import('react-devtools');
   
   // Performance monitoring
   if ('performance' in window && 'measure' in window.performance) {
