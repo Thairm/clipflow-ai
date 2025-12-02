@@ -1,6 +1,7 @@
-// Enhanced Main App Component - ClipFlow AI with Homepage
+// Enhanced Main App Component - ClipFlow AI with Homepage and Dashboard
 import React, { useState, useEffect } from 'react';
 import Homepage from './components/Homepage';
+import Dashboard from './components/Dashboard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Video, 
@@ -309,21 +310,31 @@ const VideoPreview: React.FC = () => {
   );
 };
 
-// Main ClipFlow AI Application with Homepage
+// Main ClipFlow AI Application with Homepage and Dashboard
 const ClipFlowAI: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'homepage' | 'app'>('homepage');
+  const [currentView, setCurrentView] = useState<'homepage' | 'dashboard' | 'app'>('homepage');
 
   // If we're on the homepage, show that
   if (currentView === 'homepage') {
-    return <Homepage onLaunchApp={() => setCurrentView('app')} />;
+    return <Homepage onLaunchApp={() => setCurrentView('dashboard')} />;
+  }
+
+  // If we're in the dashboard, show the dashboard hub
+  if (currentView === 'dashboard') {
+    return (
+      <Dashboard 
+        onBackToHome={() => setCurrentView('homepage')}
+        onOpenEditor={() => setCurrentView('app')}
+      />
+    );
   }
 
   // If we're in the app, show the application interface
-  return <AppInterface onBackToHome={() => setCurrentView('homepage')} />;
+  return <AppInterface onBackToHome={() => setCurrentView('homepage')} onBackToDashboard={() => setCurrentView('dashboard')} />;
 };
 
 // Application Interface Component (original ClipFlowAI logic)
-const AppInterface: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) => {
+const AppInterface: React.FC<{ onBackToHome: () => void; onBackToDashboard: () => void }> = ({ onBackToHome, onBackToDashboard }) => {
   const {
     currentProject,
     projects,
@@ -388,8 +399,11 @@ const AppInterface: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) 
 
             {/* Header Actions */}
             <div className="flex items-center gap-3">
+              <Button variant="ghost" onClick={onBackToDashboard} size="sm">
+                ← Dashboard
+              </Button>
               <Button variant="outline" onClick={onBackToHome} size="sm">
-                ← Back to Home
+                Home
               </Button>
               {currentProject ? (
                 <Badge variant="secondary" className="flex items-center gap-2">
