@@ -51,7 +51,7 @@ interface VideoEditorProps {
   onBackToDashboard: () => void;
 }
 
-// Video Preview Component
+// Video Preview Component (CapCut Style)
 const VideoPreview: React.FC = () => {
   const { 
     isPlaying, 
@@ -82,14 +82,14 @@ const VideoPreview: React.FC = () => {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    const hours = Math.floor(mins / 60);
+    const remainingMins = mins % 60;
+    return `${hours.toString().padStart(2, '0')}:${remainingMins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-
-
   return (
-    <div className="flex-1 bg-black rounded-lg overflow-hidden flex flex-col">
-      {/* Video Display Area */}
+    <div className="h-full bg-black rounded-lg overflow-hidden flex flex-col">
+      {/* Video Display Area - No bottom padding to connect to controls */}
       <div className="flex-1 bg-black flex items-center justify-center relative">
         {currentProject ? (
           <div className="relative w-full h-full flex items-center justify-center">
@@ -183,60 +183,6 @@ const VideoPreview: React.FC = () => {
             </Button>
           </div>
         )}
-      </div>
-
-      {/* Video Controls - Compact spacing */}
-      <div className="p-2 bg-card border-t">
-        <div className="flex items-center gap-3">
-          {/* Playback Controls */}
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" onClick={handleSkipBackward}>
-              <SkipBack className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={handlePlayPause}>
-              {isPlaying ? (
-                <Pause className="w-4 h-4" />
-              ) : (
-                <Play className="w-4 h-4" />
-              )}
-            </Button>
-            <Button variant="ghost" size="icon" onClick={handleSkipForward}>
-              <SkipForward className="w-4 h-4" />
-            </Button>
-          </div>
-
-          {/* Time Display */}
-          <div className="text-sm font-mono text-muted-foreground">
-            {formatTime(playheadTime)} / {formatTime(duration)}
-          </div>
-
-          {/* Volume Control */}
-          <div className="flex items-center gap-2 ml-auto">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setIsMuted(!isMuted)}
-            >
-              {isMuted ? (
-                <VolumeX className="w-4 h-4" />
-              ) : (
-                <Volume2 className="w-4 h-4" />
-              )}
-            </Button>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={isMuted ? 0 : volume}
-              onChange={(e) => {
-                const newVolume = parseInt(e.target.value);
-                setVolume(newVolume);
-                setIsMuted(newVolume === 0);
-              }}
-              className="w-20 accent-primary"
-            />
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -374,48 +320,9 @@ const VideoTimeline: React.FC = () => {
   };
 
   return (
-    <div className="h-48 bg-card border-t">
-      {/* Timeline Header */}
-      <div className="h-10 bg-muted/50 flex items-center justify-between px-3 border-b">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm">
-              <Square className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <Circle className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <Layers className="w-4 h-4" />
-            </Button>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setZoom(Math.max(10, zoom - 10))}
-            >
-              <ZoomOut className="w-4 h-4" />
-            </Button>
-            <span className="text-sm font-mono min-w-[3rem] text-center">{zoom}%</span>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setZoom(Math.min(500, zoom + 10))}
-            >
-              <ZoomIn className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-
-        <Badge variant="secondary" className="text-xs">
-          {formatTime(duration)}
-        </Badge>
-      </div>
-
+    <div className="h-full bg-card border-t">
       {/* Timeline Content */}
-      <div className="h-38 flex">
+      <div className="h-full flex">
         {/* Track Labels */}
         <div className="w-20 bg-muted/30 border-r">
           <div className="p-1 h-12 flex items-center gap-1 border-b">
@@ -425,6 +332,10 @@ const VideoTimeline: React.FC = () => {
           <div className="p-1 h-12 flex items-center gap-1 border-b">
             <Music className="w-3 h-3" />
             <span className="text-xs font-medium">A1</span>
+          </div>
+          <div className="p-1 h-12 flex items-center gap-1 border-b">
+            <Layers className="w-3 h-3" />
+            <span className="text-xs font-medium">V2</span>
           </div>
         </div>
 
@@ -470,7 +381,92 @@ const VideoTimeline: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Additional Video Track */}
+          <div className="absolute top-24 left-0 right-0 h-12 border-b flex items-center px-1">
+            {/* Empty track for additional content */}
+          </div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+// Playback Controls Component - CapCut Style
+const PlaybackControlsCompact: React.FC = () => {
+  const { 
+    isPlaying, 
+    playheadTime, 
+    setIsPlaying, 
+    setPlayheadTime,
+    currentProject
+  } = useVideoStore();
+
+  const duration = currentProject?.duration || 0;
+  const [volume, setVolume] = useState(80);
+
+  const handleSkipBackward = () => {
+    setPlayheadTime(Math.max(0, playheadTime - 10));
+  };
+
+  const handleSkipForward = () => {
+    setPlayheadTime(Math.min(duration, playheadTime + 10));
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    const hours = Math.floor(mins / 60);
+    const remainingMins = mins % 60;
+    return `${hours.toString().padStart(2, '0')}:${remainingMins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className="h-12 bg-card border-t border-b flex items-center justify-between px-6">
+      {/* Left: Playback Controls */}
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="icon" onClick={handleSkipBackward}>
+          <SkipBack className="w-4 h-4" />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={() => setIsPlaying(!isPlaying)}>
+          {isPlaying ? (
+            <Pause className="w-4 h-4" />
+          ) : (
+            <Play className="w-4 h-4" />
+          )}
+        </Button>
+        <Button variant="ghost" size="icon" onClick={handleSkipForward}>
+          <SkipForward className="w-4 h-4" />
+        </Button>
+        
+        <div className="flex items-center gap-2 ml-4">
+          <Button variant="ghost" size="icon">
+            <Volume2 className="w-4 h-4" />
+          </Button>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={volume}
+            onChange={(e) => setVolume(parseInt(e.target.value))}
+            className="w-16 accent-primary"
+          />
+        </div>
+      </div>
+
+      {/* Center: Time Display */}
+      <div className="text-sm font-mono text-foreground">
+        {formatTime(playheadTime)} | {formatTime(duration)}
+      </div>
+
+      {/* Right: Timeline Tools */}
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="sm">
+          <Square className="w-4 h-4" />
+        </Button>
+        <Button variant="ghost" size="sm">
+          <Layers className="w-4 h-4" />
+        </Button>
       </div>
     </div>
   );
@@ -527,20 +523,25 @@ const VideoEditor: React.FC<VideoEditorProps> = ({ onBackToDashboard }) => {
         </div>
       </div>
 
-      {/* Main Editor Layout */}
+      {/* Main Editor Layout - CapCut Style Tight Connection */}
       <div className="flex-1 flex">
         {/* Left Toolbar */}
         <LeftToolbar />
 
-        {/* Center Content Area - No gap between preview and timeline */}
+        {/* Center Content Area - No gaps, tight connection */}
         <div className="flex-1 flex flex-col">
-          {/* Video Preview - Connected directly to timeline */}
-          <div className="flex-1 min-h-0">
+          {/* Video Preview - Takes more space */}
+          <div className="flex-[3] min-h-0 p-2">
             <VideoPreview />
           </div>
 
-          {/* Timeline - Directly connected to preview */}
-          <VideoTimeline />
+          {/* Playback Controls - Compact, connected */}
+          <PlaybackControlsCompact />
+
+          {/* Timeline - Directly connected, no gap */}
+          <div className="flex-[2] min-h-0">
+            <VideoTimeline />
+          </div>
         </div>
       </div>
     </div>
