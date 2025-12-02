@@ -91,14 +91,29 @@ const VideoPreview: React.FC = () => {
     <div className="h-full bg-black rounded-lg overflow-hidden flex flex-col">
       {/* Video Display Area - No bottom padding to connect to controls */}
       <div className="flex-1 bg-black flex items-center justify-center relative">
-        {currentProject ? (
-          <div className="relative w-full h-full flex items-center justify-center">
-            <div className="text-white text-center">
-              <Video className="w-32 h-32 mx-auto mb-4 opacity-50" />
-              <p className="text-xl font-medium mb-2">{currentProject.name}</p>
-              <p className="text-sm opacity-75">Duration: {formatTime(duration)}</p>
-              <div className="mt-4 text-xs opacity-50">
-                Resolution: 1920x1080 • 30fps
+        {currentProject && currentProject.assets.length > 0 ? (
+          // Show uploaded video
+          <div className="relative w-full h-full">
+            {/* Video Element */}
+            <video
+              className="w-full h-full object-contain"
+              src={currentProject.assets[0].metadata?.videoUrl}
+              loop
+              muted
+              style={{ display: 'none' }} // Hidden for now, will show actual video later
+            />
+            
+            {/* Video Preview Placeholder */}
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
+              <div className="text-white text-center">
+                <Video className="w-32 h-32 mx-auto mb-4 text-primary" />
+                <p className="text-xl font-medium mb-2">{currentProject.assets[0].name}</p>
+                <p className="text-sm opacity-75 mb-2">
+                  Duration: {formatTime(currentProject.assets[0].duration || 0)}
+                </p>
+                <div className="text-xs opacity-50">
+                  {currentProject.assets[0].metadata?.width}x{currentProject.assets[0].metadata?.height} • {currentProject.assets[0].metadata?.fps}fps
+                </div>
               </div>
             </div>
             
@@ -138,16 +153,15 @@ const VideoPreview: React.FC = () => {
               <p className="text-sm opacity-75 mb-4">Upload a video to start editing</p>
               <Button 
                 className="bg-primary hover:bg-primary/90"
-                onClick={() => {
+                onClick={async () => {
                   // Trigger file upload
                   const input = document.createElement('input');
                   input.type = 'file';
                   input.accept = 'video/*';
-                  input.onchange = (e) => {
+                  input.onchange = async (e) => {
                     const file = (e.target as HTMLInputElement).files?.[0];
                     if (file) {
-                      // Handle file upload here
-                      console.log('Video file selected:', file.name);
+                      await handleVideoUpload(file);
                     }
                   };
                   input.click();
@@ -217,7 +231,65 @@ const LeftToolbar: React.FC = () => {
             key={panel.id}
             variant={activePanel === panel.id ? 'default' : 'ghost'}
             size="icon"
-            onClick={() => setActivePanel(panel.id)}
+            onClick={() => {
+              setActivePanel(panel.id);
+              if (panel.id === 'media') {
+                // Trigger file upload for media panel
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'video/*,image/*,audio/*';
+                input.onchange = async (e) => {
+                  const file = (e.target as HTMLInputElement).files?.[0];
+                  if (file && file.type.startsWith('video/')) {
+                    // Use the same upload logic
+                    const videoUrl = URL.createObjectURL(file);
+                    const videoMetadata = await extractVideoMetadata(videoUrl);
+                    
+                    if (!currentProject) {
+                      const projectName = file.name.replace(/\.[^/.]+$/, "");
+                      createProject(projectName, '16:9');
+                      setTimeout(async () => {
+                        const asset = await addAsset(file);
+                        setTimeout(async () => {
+                          const state = useVideoStore.getState();
+                          const currentProject = state.currentProject;
+                          if (currentProject) {
+                            const videoTrack = currentProject.tracks.find(track => track.type === 'video');
+                            if (videoTrack) {
+                              addClip(videoTrack.id, asset.id, 0, videoMetadata.duration);
+                            }
+                            updateProject({
+                              duration: videoMetadata.duration,
+                              assets: currentProject.assets.map(a => 
+                                a.id === asset.id ? {
+                                  ...a,
+                                  duration: videoMetadata.duration,
+                                  metadata: {
+                                    ...a.metadata,
+                                    width: videoMetadata.width,
+                                    height: videoMetadata.height,
+                                    fps: videoMetadata.fps,
+                                    videoUrl: videoUrl
+                                  }
+                                } : a
+                              )
+                            });
+                          }
+                        }, 300);
+                      }, 200);
+                      
+                      addNotification({
+                        type: 'success',
+                        title: 'Video Uploaded',
+                        message: `${file.name} has been added to the project`,
+                        duration: 3000
+                      });
+                    }
+                  }
+                };
+                input.click();
+              }
+            }}
             className="w-12 h-12"
             title={panel.label}
           >
@@ -356,20 +428,26 @@ const VideoTimeline: React.FC = () => {
 
           {/* Video Track */}
           <div className="absolute top-0 left-0 right-0 h-12 border-b flex items-center px-1">
-            {currentProject && (
-              <div
-                className="h-6 bg-blue-500 rounded-sm flex items-center px-1 cursor-move"
-                style={{ 
-                  width: '100%',
-                  position: 'absolute',
-                  left: 0
-                }}
-              >
-                <span className="text-xs text-white truncate">
-                  {currentProject.name}
-                </span>
-              </div>
-            )}
+            {currentProject && currentProject.tracks[0]?.clips.map((clip, index) => {
+              const asset = currentProject.assets.find(a => a.id === clip.assetId);
+              const clipWidth = duration > 0 ? `${(clip.endTime - clip.startTime) / duration * 100}%` : '100%';
+              const clipLeft = duration > 0 ? `${(clip.startTime / duration) * 100}%` : '0%';
+              
+              return (
+                <div
+                  key={clip.id}
+                  className="h-6 bg-blue-500 rounded-sm flex items-center px-1 cursor-move absolute"
+                  style={{ 
+                    width: clipWidth,
+                    left: clipLeft
+                  }}
+                >
+                  <span className="text-xs text-white truncate">
+                    {asset?.name || 'Video Clip'}
+                  </span>
+                </div>
+              );
+            })}
           </div>
 
           {/* Audio Track */}
@@ -474,7 +552,124 @@ const PlaybackControlsCompact: React.FC = () => {
 
 // Main VideoEditor Component
 const VideoEditor: React.FC<VideoEditorProps> = ({ onBackToDashboard }) => {
-  const { currentProject, addNotification } = useVideoStore();
+  const { 
+    currentProject, 
+    createProject, 
+    addAsset, 
+    addClip, 
+    addNotification, 
+    updateProject 
+  } = useVideoStore();
+  
+  const handleVideoUpload = async (file: File) => {
+    try {
+      // Show loading notification
+      addNotification({
+        type: 'info',
+        title: 'Processing Video',
+        message: `Uploading ${file.name}...`
+      });
+
+      // Create video URL for metadata extraction
+      const videoUrl = URL.createObjectURL(file);
+      
+      // Extract video metadata
+      const videoMetadata = await extractVideoMetadata(videoUrl);
+      
+      // Create project if none exists
+      if (!currentProject) {
+        const projectName = file.name.replace(/\.[^/.]+$/, ""); // Remove file extension
+        createProject(projectName, '16:9');
+        
+        // Wait for project to be created in store
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+
+      // Add video as asset
+      const asset = await addAsset(file);
+      
+      // Update the asset with video metadata
+      setTimeout(async () => {
+        const state = useVideoStore.getState();
+        const currentProject = state.currentProject;
+        
+        if (currentProject) {
+          // Find video track and add clip
+          const videoTrack = currentProject.tracks.find(track => track.type === 'video');
+          if (videoTrack) {
+            addClip(videoTrack.id, asset.id, 0, videoMetadata.duration);
+          }
+          
+          // Update project with video info
+          updateProject({
+            duration: videoMetadata.duration,
+            assets: currentProject.assets.map(a => 
+              a.id === asset.id ? {
+                ...a,
+                duration: videoMetadata.duration,
+                metadata: {
+                  ...a.metadata,
+                  width: videoMetadata.width,
+                  height: videoMetadata.height,
+                  fps: videoMetadata.fps,
+                  videoUrl: videoUrl
+                }
+              } : a
+            )
+          });
+        }
+      }, 300);
+
+      // Success notification
+      addNotification({
+        type: 'success',
+        title: 'Video Uploaded',
+        message: `${file.name} has been added to the project`,
+        duration: 3000
+      });
+
+    } catch (error) {
+      console.error('Error uploading video:', error);
+      addNotification({
+        type: 'error',
+        title: 'Upload Failed',
+        message: 'Failed to upload video file'
+      });
+    }
+  };
+
+  const extractVideoMetadata = (videoUrl: string): Promise<{
+    duration: number;
+    width: number;
+    height: number;
+    fps: number;
+  }> => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      
+      video.onloadedmetadata = () => {
+        const duration = video.duration;
+        const width = video.videoWidth;
+        const height = video.videoHeight;
+        
+        // Estimate FPS (common for web videos)
+        const fps = 30;
+        
+        // Clean up
+        URL.revokeObjectURL(videoUrl);
+        
+        resolve({ duration, width, height, fps });
+      };
+      
+      video.onerror = () => {
+        URL.revokeObjectURL(videoUrl);
+        reject(new Error('Failed to load video metadata'));
+      };
+      
+      video.src = videoUrl;
+    });
+  };
   
   const handleExport = () => {
     addNotification({
