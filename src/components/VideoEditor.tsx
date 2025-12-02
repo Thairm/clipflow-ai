@@ -131,10 +131,56 @@ const VideoPreview: React.FC = () => {
             </Button>
           </div>
         ) : (
-          <div className="text-white text-center">
-            <Video className="w-32 h-32 mx-auto mb-4 opacity-50" />
-            <p className="text-xl mb-2">No video loaded</p>
-            <p className="text-sm opacity-75">Upload a video to start editing</p>
+          <div className="relative w-full h-full flex items-center justify-center">
+            <div className="text-white text-center">
+              <Video className="w-32 h-32 mx-auto mb-4 opacity-50" />
+              <p className="text-xl font-medium mb-2">Professional Video Editor</p>
+              <p className="text-sm opacity-75 mb-4">Upload a video to start editing</p>
+              <Button 
+                className="bg-primary hover:bg-primary/90"
+                onClick={() => {
+                  // Trigger file upload
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'video/*';
+                  input.onchange = (e) => {
+                    const file = (e.target as HTMLInputElement).files?.[0];
+                    if (file) {
+                      // Handle file upload here
+                      console.log('Video file selected:', file.name);
+                    }
+                  };
+                  input.click();
+                }}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Upload Video
+              </Button>
+            </div>
+            
+            {/* Always show play button even when no video */}
+            <Button
+              onClick={handlePlayPause}
+              className="absolute inset-0 m-auto w-20 h-20 rounded-full bg-black/50 hover:bg-black/70 border-2 border-white/20"
+              variant="ghost"
+              size="icon"
+            >
+              <Play className="w-10 h-10 text-white ml-1" />
+            </Button>
+
+            {/* Always show fullscreen button */}
+            <Button
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70"
+              variant="ghost"
+              size="icon"
+            >
+              {isFullscreen ? (
+                <Minimize className="w-5 h-5 text-white" />
+              ) : (
+                <Maximize className="w-5 h-5 text-white" />
+              )}
+            </Button>
           </div>
         )}
       </div>
