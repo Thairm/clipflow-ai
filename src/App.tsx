@@ -428,33 +428,8 @@ const AppInterface: React.FC<{ onBackToHome: () => void; onBackToDashboard: () =
 
       {/* Main Content Area */}
       <div className="container mx-auto px-4 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-6">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
-              <Folder className="w-4 h-4" />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="ai-clips" className="flex items-center gap-2">
-              <Wand2 className="w-4 h-4" />
-              AI Clips
-            </TabsTrigger>
-            <TabsTrigger value="captions" className="flex items-center gap-2">
-              <Type className="w-4 h-4" />
-              Captions
-            </TabsTrigger>
-            <TabsTrigger value="viral-shorts" className="flex items-center gap-2">
-              <Zap className="w-4 h-4" />
-              Viral Shorts
-            </TabsTrigger>
-            <TabsTrigger value="export" className="flex items-center gap-2">
-              <Download className="w-4 h-4" />
-              Export
-            </TabsTrigger>
-            <TabsTrigger value="editor" className="flex items-center gap-2">
-              <Video className="w-4 h-4" />
-              Editor
-            </TabsTrigger>
-          </TabsList>
+        {/* Direct Video Editor - No Tabs */}
+        <VideoEditor onBackToDashboard={onBackToDashboard} />
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
@@ -472,47 +447,7 @@ const AppInterface: React.FC<{ onBackToHome: () => void; onBackToDashboard: () =
                   </Button>
                 </CardContent>
               </Card>
-            ) : (
-              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                {/* Video Preview */}
-                <div className="xl:col-span-2">
-                  <VideoPreview />
-                </div>
 
-                {/* AI Features Dashboard */}
-                <div className="space-y-6">
-                  <AIFeaturesDashboard />
-                </div>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* AI Clips Tab */}
-          <TabsContent value="ai-clips">
-            <AIClippingPanel />
-          </TabsContent>
-
-          {/* Captions Tab */}
-          <TabsContent value="captions">
-            <HormoziCaptionsPanel />
-          </TabsContent>
-
-          {/* Viral Shorts Tab */}
-          <TabsContent value="viral-shorts">
-            <ViralShortsPanel />
-          </TabsContent>
-
-          {/* Export Tab */}
-          <TabsContent value="export">
-            <ExportSystem />
-          </TabsContent>
-
-          {/* Editor Tab */}
-          <TabsContent value="editor" className="p-0">
-            <VideoEditor onBackToDashboard={onBackToDashboard} />
-          </TabsContent>
-        </Tabs>
-      </div>
 
       {/* Notification System */}
       <AnimatePresence>
