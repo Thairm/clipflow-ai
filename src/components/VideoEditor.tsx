@@ -185,11 +185,11 @@ const VideoPreview: React.FC = () => {
         )}
       </div>
 
-      {/* Video Controls */}
-      <div className="p-4 bg-card border-t">
-        <div className="flex items-center gap-4">
+      {/* Video Controls - Compact spacing */}
+      <div className="p-2 bg-card border-t">
+        <div className="flex items-center gap-3">
           {/* Playback Controls */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" onClick={handleSkipBackward}>
               <SkipBack className="w-4 h-4" />
             </Button>
@@ -211,7 +211,7 @@ const VideoPreview: React.FC = () => {
           </div>
 
           {/* Volume Control */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ml-auto">
             <Button 
               variant="ghost" 
               size="icon" 
@@ -233,7 +233,7 @@ const VideoPreview: React.FC = () => {
                 setVolume(newVolume);
                 setIsMuted(newVolume === 0);
               }}
-              className="w-24 accent-primary"
+              className="w-20 accent-primary"
             />
           </div>
         </div>
@@ -374,9 +374,9 @@ const VideoTimeline: React.FC = () => {
   };
 
   return (
-    <div className="h-64 bg-card border-t">
+    <div className="h-48 bg-card border-t">
       {/* Timeline Header */}
-      <div className="h-12 bg-muted/50 flex items-center justify-between px-4 border-b">
+      <div className="h-10 bg-muted/50 flex items-center justify-between px-3 border-b">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm">
@@ -415,16 +415,16 @@ const VideoTimeline: React.FC = () => {
       </div>
 
       {/* Timeline Content */}
-      <div className="h-52 flex">
+      <div className="h-38 flex">
         {/* Track Labels */}
-        <div className="w-24 bg-muted/30 border-r">
-          <div className="p-2 h-16 flex items-center gap-2 border-b">
-            <Video className="w-4 h-4" />
-            <span className="text-sm font-medium">V1</span>
+        <div className="w-20 bg-muted/30 border-r">
+          <div className="p-1 h-12 flex items-center gap-1 border-b">
+            <Video className="w-3 h-3" />
+            <span className="text-xs font-medium">V1</span>
           </div>
-          <div className="p-2 h-16 flex items-center gap-2 border-b">
-            <Music className="w-4 h-4" />
-            <span className="text-sm font-medium">A1</span>
+          <div className="p-1 h-12 flex items-center gap-1 border-b">
+            <Music className="w-3 h-3" />
+            <span className="text-xs font-medium">A1</span>
           </div>
         </div>
 
@@ -440,14 +440,14 @@ const VideoTimeline: React.FC = () => {
             className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-10 pointer-events-none"
             style={{ left: `${duration > 0 ? (playheadTime / duration) * 100 : 0}%` }}
           >
-            <div className="absolute -top-2 -left-2 w-4 h-4 bg-red-500 rotate-45" />
+            <div className="absolute -top-1 -left-1 w-3 h-3 bg-red-500 rotate-45" />
           </div>
 
           {/* Video Track */}
-          <div className="absolute top-0 left-0 right-0 h-16 border-b flex items-center px-2">
+          <div className="absolute top-0 left-0 right-0 h-12 border-b flex items-center px-1">
             {currentProject && (
               <div
-                className="h-8 bg-blue-500 rounded-sm flex items-center px-2 cursor-move"
+                className="h-6 bg-blue-500 rounded-sm flex items-center px-1 cursor-move"
                 style={{ 
                   width: '100%',
                   position: 'absolute',
@@ -462,11 +462,11 @@ const VideoTimeline: React.FC = () => {
           </div>
 
           {/* Audio Track */}
-          <div className="absolute top-16 left-0 right-0 h-16 border-b flex items-center px-2">
+          <div className="absolute top-12 left-0 right-0 h-12 border-b flex items-center px-1">
             {currentProject && (
-              <div className="flex-1 h-8">
+              <div className="flex-1 h-6">
                 {/* Audio waveform visualization would go here */}
-                <div className="h-2 bg-green-500/30 rounded-sm" />
+                <div className="h-1.5 bg-green-500/30 rounded-sm" />
               </div>
             )}
           </div>
@@ -532,14 +532,14 @@ const VideoEditor: React.FC<VideoEditorProps> = ({ onBackToDashboard }) => {
         {/* Left Toolbar */}
         <LeftToolbar />
 
-        {/* Center Content Area */}
+        {/* Center Content Area - No gap between preview and timeline */}
         <div className="flex-1 flex flex-col">
-          {/* Video Preview */}
-          <div className="flex-1 p-4">
+          {/* Video Preview - Connected directly to timeline */}
+          <div className="flex-1 min-h-0">
             <VideoPreview />
           </div>
 
-          {/* Timeline */}
+          {/* Timeline - Directly connected to preview */}
           <VideoTimeline />
         </div>
       </div>
