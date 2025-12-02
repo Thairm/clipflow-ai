@@ -58,9 +58,10 @@ const VideoPreview: React.FC = () => {
     playheadTime, 
     setIsPlaying, 
     setPlayheadTime,
-    currentProject,
-    duration
+    currentProject
   } = useVideoStore();
+
+  const duration = currentProject?.duration || 0;
 
   const [volume, setVolume] = useState(80);
   const [isMuted, setIsMuted] = useState(false);
@@ -84,16 +85,7 @@ const VideoPreview: React.FC = () => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleTimelineClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!currentProject) return;
-    
-    const rect = e.currentTarget.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const percentage = clickX / rect.width;
-    const newTime = percentage * duration;
-    
-    setPlayheadTime(Math.max(0, Math.min(duration, newTime)));
-  };
+
 
   return (
     <div className="flex-1 bg-black rounded-lg overflow-hidden flex flex-col">
@@ -271,9 +263,10 @@ const VideoTimeline: React.FC = () => {
     playheadTime, 
     setPlayheadTime,
     currentProject,
-    duration,
     selectedClips 
   } = useVideoStore();
+
+  const duration = currentProject?.duration || 0;
 
   const [zoom, setZoom] = useState(100);
   const [isDragging, setIsDragging] = useState(false);
@@ -286,6 +279,23 @@ const VideoTimeline: React.FC = () => {
 
   const generateTimelineMarkers = () => {
     const markers = [];
+    
+    if (duration === 0) {
+      // No duration, show just a starting marker
+      markers.push(
+        <div
+          key={0}
+          className="absolute top-0 h-full border-l border-border"
+          style={{ left: '0%' }}
+        >
+          <div className="absolute -top-6 left-0 text-xs text-muted-foreground transform -translate-x-1/2">
+            {formatTime(0)}
+          </div>
+        </div>
+      );
+      return markers;
+    }
+    
     const interval = Math.max(1, Math.floor(duration / 10));
     
     for (let i = 0; i <= duration; i += interval) {
@@ -382,7 +392,7 @@ const VideoTimeline: React.FC = () => {
           {/* Playhead */}
           <div
             className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-10 pointer-events-none"
-            style={{ left: `${(playheadTime / duration) * 100}%` }}
+            style={{ left: `${duration > 0 ? (playheadTime / duration) * 100 : 0}%` }}
           >
             <div className="absolute -top-2 -left-2 w-4 h-4 bg-red-500 rotate-45" />
           </div>
@@ -393,7 +403,7 @@ const VideoTimeline: React.FC = () => {
               <div
                 className="h-8 bg-blue-500 rounded-sm flex items-center px-2 cursor-move"
                 style={{ 
-                  width: `${(duration / duration) * 100}%`,
+                  width: '100%',
                   position: 'absolute',
                   left: 0
                 }}
