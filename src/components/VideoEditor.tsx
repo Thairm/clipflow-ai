@@ -51,6 +51,126 @@ interface VideoEditorProps {
   onBackToDashboard: () => void;
 }
 
+// Video upload helper functions - accessible to all components
+const handleVideoUpload = async (file: File) => {
+  const { 
+    currentProject, 
+    createProject, 
+    addAsset, 
+    addClip, 
+    updateProject,
+    addNotification 
+  } = useVideoStore();
+
+  try {
+    // Show loading notification
+    addNotification({
+      type: 'info',
+      title: 'Processing Video',
+      message: `Uploading ${file.name}...`
+    });
+
+    // Create video URL for metadata extraction
+    const videoUrl = URL.createObjectURL(file);
+    
+    // Extract video metadata
+    const videoMetadata = await extractVideoMetadata(videoUrl);
+    
+    // Create project if none exists
+    if (!currentProject) {
+      const projectName = file.name.replace(/\.[^/.]+$/, ""); // Remove file extension
+      createProject(projectName, '16:9');
+      
+      // Wait for project to be created in store
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+
+    // Add video as asset
+    const asset = await addAsset(file);
+    
+    // Update the asset with video metadata
+    setTimeout(async () => {
+      const state = useVideoStore.getState();
+      const currentProject = state.currentProject;
+      
+      if (currentProject) {
+        // Find video track and add clip
+        const videoTrack = currentProject.tracks.find(track => track.type === 'video');
+        if (videoTrack) {
+          addClip(videoTrack.id, asset.id, 0, videoMetadata.duration);
+        }
+        
+        // Update project with video info
+        updateProject({
+          duration: videoMetadata.duration,
+          assets: currentProject.assets.map(a => 
+            a.id === asset.id ? {
+              ...a,
+              duration: videoMetadata.duration,
+              metadata: {
+                ...a.metadata,
+                width: videoMetadata.width,
+                height: videoMetadata.height,
+                fps: videoMetadata.fps,
+                videoUrl: videoUrl
+              }
+            } : a
+          )
+        });
+      }
+    }, 300);
+
+    // Success notification
+    addNotification({
+      type: 'success',
+      title: 'Video Uploaded',
+      message: `${file.name} has been added to the project`,
+      duration: 3000
+    });
+
+  } catch (error) {
+    console.error('Error uploading video:', error);
+    addNotification({
+      type: 'error',
+      title: 'Upload Failed',
+      message: 'Failed to upload video file'
+    });
+  }
+};
+
+const extractVideoMetadata = (videoUrl: string): Promise<{
+  duration: number;
+  width: number;
+  height: number;
+  fps: number;
+}> => {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    
+    video.onloadedmetadata = () => {
+      const duration = video.duration;
+      const width = video.videoWidth;
+      const height = video.videoHeight;
+      
+      // Estimate FPS (common for web videos)
+      const fps = 30;
+      
+      // Clean up
+      URL.revokeObjectURL(videoUrl);
+      
+      resolve({ duration, width, height, fps });
+    };
+    
+    video.onerror = () => {
+      URL.revokeObjectURL(videoUrl);
+      reject(new Error('Failed to load video metadata'));
+    };
+    
+    video.src = videoUrl;
+  });
+};
+
 // Video Preview Component (CapCut Style)
 const VideoPreview: React.FC = () => {
   const { 
@@ -204,6 +324,15 @@ const VideoPreview: React.FC = () => {
 
 // Left Toolbar Component
 const LeftToolbar: React.FC = () => {
+  const { 
+    currentProject, 
+    createProject, 
+    addAsset, 
+    addClip, 
+    updateProject,
+    addNotification 
+  } = useVideoStore();
+  
   const [activeTool, setActiveTool] = useState('selection');
   const [activePanel, setActivePanel] = useState('tools');
 
@@ -554,122 +683,8 @@ const PlaybackControlsCompact: React.FC = () => {
 const VideoEditor: React.FC<VideoEditorProps> = ({ onBackToDashboard }) => {
   const { 
     currentProject, 
-    createProject, 
-    addAsset, 
-    addClip, 
-    addNotification, 
-    updateProject 
+    addNotification 
   } = useVideoStore();
-  
-  const handleVideoUpload = async (file: File) => {
-    try {
-      // Show loading notification
-      addNotification({
-        type: 'info',
-        title: 'Processing Video',
-        message: `Uploading ${file.name}...`
-      });
-
-      // Create video URL for metadata extraction
-      const videoUrl = URL.createObjectURL(file);
-      
-      // Extract video metadata
-      const videoMetadata = await extractVideoMetadata(videoUrl);
-      
-      // Create project if none exists
-      if (!currentProject) {
-        const projectName = file.name.replace(/\.[^/.]+$/, ""); // Remove file extension
-        createProject(projectName, '16:9');
-        
-        // Wait for project to be created in store
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-
-      // Add video as asset
-      const asset = await addAsset(file);
-      
-      // Update the asset with video metadata
-      setTimeout(async () => {
-        const state = useVideoStore.getState();
-        const currentProject = state.currentProject;
-        
-        if (currentProject) {
-          // Find video track and add clip
-          const videoTrack = currentProject.tracks.find(track => track.type === 'video');
-          if (videoTrack) {
-            addClip(videoTrack.id, asset.id, 0, videoMetadata.duration);
-          }
-          
-          // Update project with video info
-          updateProject({
-            duration: videoMetadata.duration,
-            assets: currentProject.assets.map(a => 
-              a.id === asset.id ? {
-                ...a,
-                duration: videoMetadata.duration,
-                metadata: {
-                  ...a.metadata,
-                  width: videoMetadata.width,
-                  height: videoMetadata.height,
-                  fps: videoMetadata.fps,
-                  videoUrl: videoUrl
-                }
-              } : a
-            )
-          });
-        }
-      }, 300);
-
-      // Success notification
-      addNotification({
-        type: 'success',
-        title: 'Video Uploaded',
-        message: `${file.name} has been added to the project`,
-        duration: 3000
-      });
-
-    } catch (error) {
-      console.error('Error uploading video:', error);
-      addNotification({
-        type: 'error',
-        title: 'Upload Failed',
-        message: 'Failed to upload video file'
-      });
-    }
-  };
-
-  const extractVideoMetadata = (videoUrl: string): Promise<{
-    duration: number;
-    width: number;
-    height: number;
-    fps: number;
-  }> => {
-    return new Promise((resolve, reject) => {
-      const video = document.createElement('video');
-      video.preload = 'metadata';
-      
-      video.onloadedmetadata = () => {
-        const duration = video.duration;
-        const width = video.videoWidth;
-        const height = video.videoHeight;
-        
-        // Estimate FPS (common for web videos)
-        const fps = 30;
-        
-        // Clean up
-        URL.revokeObjectURL(videoUrl);
-        
-        resolve({ duration, width, height, fps });
-      };
-      
-      video.onerror = () => {
-        URL.revokeObjectURL(videoUrl);
-        reject(new Error('Failed to load video metadata'));
-      };
-      
-      video.src = videoUrl;
-    });
-  };
   
   const handleExport = () => {
     addNotification({
