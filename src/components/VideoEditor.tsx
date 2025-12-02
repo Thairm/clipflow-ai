@@ -71,66 +71,64 @@ const handleVideoUpload = async (file: File) => {
       message: `Uploading ${file.name}...`
     });
 
-    // Create video URL for metadata extraction
+    // Create video URL
     const videoUrl = URL.createObjectURL(file);
     
     // Extract video metadata
     const videoMetadata = await extractVideoMetadata(videoUrl);
     
-    // Create new project or clear existing one
-    if (!currentProject) {
-      // Create new project if none exists
-      const projectName = file.name.replace(/\.[^/.]+$/, ""); // Remove file extension
-      createProject(projectName, '16:9');
-      
-      // Wait for project to be created in store
-      await new Promise(resolve => setTimeout(resolve, 200));
-    } else {
-      // Clear existing project to replace with new video
-      const projectName = file.name.replace(/\.[^/.]+$/, "");
-      createProject(projectName, '16:9');
-      
-      // Wait for project to be cleared and recreated
-      await new Promise(resolve => setTimeout(resolve, 200));
-    }
-
-    // Add video as asset
-    const asset = await addAsset(file);
+    // Create project name
+    const projectName = file.name.replace(/\.[^/.]+$/, "");
     
-    // Update the asset with video metadata
-    setTimeout(async () => {
-      const state = useVideoStore.getState();
-      const currentProject = state.currentProject;
-      
-      if (currentProject) {
-        // Find video track and add clip
-        const videoTrack = currentProject.tracks.find(track => track.type === 'video');
-        if (videoTrack) {
-          addClip(videoTrack.id, asset.id, 0, videoMetadata.duration);
-        }
-        
-        // Update project with video info
-        updateProject({
-          duration: videoMetadata.duration,
-          assets: currentProject.assets.map(a => 
-            a.id === asset.id ? {
-              ...a,
-              duration: videoMetadata.duration,
-              metadata: {
-                ...a.metadata,
-                width: videoMetadata.width,
-                height: videoMetadata.height,
-                fps: videoMetadata.fps,
-                videoUrl: videoUrl
-              }
-            } : a
-          )
-        });
-        
-        // Reset playhead to start
-        setPlayheadTime(0);
+    // Always create fresh project for clean upload
+    createProject(projectName, '16:9');
+    
+    // Wait briefly for project to be created
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Create asset with video URL directly
+    const newAsset = {
+      id: Date.now().toString(),
+      name: file.name,
+      type: 'video',
+      url: videoUrl,
+      duration: videoMetadata.duration,
+      metadata: {
+        width: videoMetadata.width,
+        height: videoMetadata.height,
+        fps: videoMetadata.fps,
+        videoUrl: videoUrl
       }
-    }, 300);
+    };
+    
+    // Add asset directly to project
+    updateProject({
+      duration: videoMetadata.duration,
+      assets: [newAsset],
+      tracks: [
+        {
+          id: 'video-track',
+          type: 'video',
+          name: 'V1',
+          clips: [{
+            id: Date.now().toString() + '-clip',
+            assetId: newAsset.id,
+            startTime: 0,
+            endTime: videoMetadata.duration
+          }]
+        }
+      ]
+    });
+    
+    // Reset playhead and stop playback
+    setPlayheadTime(0);
+    setIsPlaying(false);
+    
+    // Clean up old video URL if replacing
+    if (currentProject?.assets[0]?.metadata?.videoUrl && 
+        currentProject.assets[0].metadata.videoUrl !== videoUrl) {
+      URL.revokeObjectURL(currentProject.assets[0].metadata.videoUrl);
+    }
 
     // Success notification
     addNotification({
@@ -255,14 +253,20 @@ const VideoPreview: React.FC = () => {
             <video
               ref={videoRef}
               className="w-full h-full object-contain"
-              src={currentProject.assets[0].metadata?.videoUrl}
+              src={currentProject.assets[0]?.metadata?.videoUrl || currentProject.assets[0]?.url}
               loop
               muted={isMuted}
+              controls={false}
+              playsInline
               onTimeUpdate={handleTimeUpdate}
               onLoadedMetadata={() => {
                 if (videoRef.current) {
                   videoRef.current.currentTime = playheadTime;
                 }
+              }}
+              onError={(e) => {
+                console.error('Video error:', e);
+                console.log('Video URL:', currentProject.assets[0]?.metadata?.videoUrl);
               }}
             />
             
@@ -390,10 +394,10 @@ const LeftToolbar: React.FC = () => {
   const { 
     currentProject, 
     createProject, 
-    addAsset, 
-    addClip, 
     updateProject,
-    addNotification 
+    addNotification,
+    setPlayheadTime,
+    setIsPlaying
   } = useVideoStore();
   
   const [activeTool, setActiveTool] = useState('selection');
@@ -433,50 +437,56 @@ const LeftToolbar: React.FC = () => {
                 input.onchange = async (e) => {
                   const file = (e.target as HTMLInputElement).files?.[0];
                   if (file && file.type.startsWith('video/')) {
-                    // Use the same upload logic
+                    // Use the same upload logic as handleVideoUpload
                     const videoUrl = URL.createObjectURL(file);
                     const videoMetadata = await extractVideoMetadata(videoUrl);
                     
-                    if (!currentProject) {
-                      const projectName = file.name.replace(/\.[^/.]+$/, "");
-                      createProject(projectName, '16:9');
-                      setTimeout(async () => {
-                        const asset = await addAsset(file);
-                        setTimeout(async () => {
-                          const state = useVideoStore.getState();
-                          const currentProject = state.currentProject;
-                          if (currentProject) {
-                            const videoTrack = currentProject.tracks.find(track => track.type === 'video');
-                            if (videoTrack) {
-                              addClip(videoTrack.id, asset.id, 0, videoMetadata.duration);
-                            }
-                            updateProject({
-                              duration: videoMetadata.duration,
-                              assets: currentProject.assets.map(a => 
-                                a.id === asset.id ? {
-                                  ...a,
-                                  duration: videoMetadata.duration,
-                                  metadata: {
-                                    ...a.metadata,
-                                    width: videoMetadata.width,
-                                    height: videoMetadata.height,
-                                    fps: videoMetadata.fps,
-                                    videoUrl: videoUrl
-                                  }
-                                } : a
-                              )
-                            });
-                          }
-                        }, 300);
-                      }, 200);
-                      
-                      addNotification({
-                        type: 'success',
-                        title: 'Video Uploaded',
-                        message: `${file.name} has been added to the project`,
-                        duration: 3000
-                      });
-                    }
+                    const projectName = file.name.replace(/\.[^/.]+$/, "");
+                    
+                    // Create asset with video URL directly
+                    const newAsset = {
+                      id: Date.now().toString(),
+                      name: file.name,
+                      type: 'video',
+                      url: videoUrl,
+                      duration: videoMetadata.duration,
+                      metadata: {
+                        width: videoMetadata.width,
+                        height: videoMetadata.height,
+                        fps: videoMetadata.fps,
+                        videoUrl: videoUrl
+                      }
+                    };
+                    
+                    // Update project directly
+                    updateProject({
+                      duration: videoMetadata.duration,
+                      assets: [newAsset],
+                      tracks: [
+                        {
+                          id: 'video-track',
+                          type: 'video',
+                          name: 'V1',
+                          clips: [{
+                            id: Date.now().toString() + '-clip',
+                            assetId: newAsset.id,
+                            startTime: 0,
+                            endTime: videoMetadata.duration
+                          }]
+                        }
+                      ]
+                    });
+                    
+                    // Reset playhead and stop playback
+                    setPlayheadTime(0);
+                    setIsPlaying(false);
+                    
+                    addNotification({
+                      type: 'success',
+                      title: 'Video Uploaded',
+                      message: `${file.name} has been added to the project`,
+                      duration: 3000
+                    });
                   }
                 };
                 input.click();
