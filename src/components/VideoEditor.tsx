@@ -59,7 +59,8 @@ const handleVideoUpload = async (file: File) => {
     addAsset, 
     addClip, 
     updateProject,
-    addNotification 
+    addNotification,
+    setPlayheadTime
   } = useVideoStore();
 
   try {
