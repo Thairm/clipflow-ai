@@ -76,12 +76,20 @@ const handleVideoUpload = async (file: File) => {
     // Extract video metadata
     const videoMetadata = await extractVideoMetadata(videoUrl);
     
-    // Create project if none exists
+    // Create new project or clear existing one
     if (!currentProject) {
+      // Create new project if none exists
       const projectName = file.name.replace(/\.[^/.]+$/, ""); // Remove file extension
       createProject(projectName, '16:9');
       
       // Wait for project to be created in store
+      await new Promise(resolve => setTimeout(resolve, 200));
+    } else {
+      // Clear existing project to replace with new video
+      const projectName = file.name.replace(/\.[^/.]+$/, "");
+      createProject(projectName, '16:9');
+      
+      // Wait for project to be cleared and recreated
       await new Promise(resolve => setTimeout(resolve, 200));
     }
 
@@ -117,6 +125,9 @@ const handleVideoUpload = async (file: File) => {
             } : a
           )
         });
+        
+        // Reset playhead to start
+        setPlayheadTime(0);
       }
     }, 300);
 
@@ -182,10 +193,43 @@ const VideoPreview: React.FC = () => {
   } = useVideoStore();
 
   const duration = currentProject?.duration || 0;
-
   const [volume, setVolume] = useState(80);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    const hours = Math.floor(mins / 60);
+    const remainingMins = mins % 60;
+    return `${hours.toString().padStart(2, '0')}:${remainingMins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Sync video playback with store state
+  useEffect(() => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.play().catch(console.error);
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  }, [isPlaying]);
+
+  // Sync video time with playhead time
+  useEffect(() => {
+    if (videoRef.current && Math.abs(videoRef.current.currentTime - playheadTime) > 0.1) {
+      videoRef.current.currentTime = playheadTime;
+    }
+  }, [playheadTime]);
+
+  // Update playhead when video time changes
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      setPlayheadTime(videoRef.current.currentTime);
+    }
+  };
 
   const handlePlayPause = () => {
     setIsPlaying(!isPlaying);
@@ -199,14 +243,6 @@ const VideoPreview: React.FC = () => {
     setPlayheadTime(Math.min(duration, playheadTime + 10));
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    const hours = Math.floor(mins / 60);
-    const remainingMins = mins % 60;
-    return `${hours.toString().padStart(2, '0')}:${remainingMins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
   return (
     <div className="h-full bg-black rounded-lg overflow-hidden flex flex-col">
       {/* Video Display Area - No bottom padding to connect to controls */}
@@ -214,28 +250,20 @@ const VideoPreview: React.FC = () => {
         {currentProject && currentProject.assets.length > 0 ? (
           // Show uploaded video
           <div className="relative w-full h-full">
-            {/* Video Element */}
+            {/* Video Element - Now Visible! */}
             <video
+              ref={videoRef}
               className="w-full h-full object-contain"
               src={currentProject.assets[0].metadata?.videoUrl}
               loop
-              muted
-              style={{ display: 'none' }} // Hidden for now, will show actual video later
+              muted={isMuted}
+              onTimeUpdate={handleTimeUpdate}
+              onLoadedMetadata={() => {
+                if (videoRef.current) {
+                  videoRef.current.currentTime = playheadTime;
+                }
+              }}
             />
-            
-            {/* Video Preview Placeholder */}
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
-              <div className="text-white text-center">
-                <Video className="w-32 h-32 mx-auto mb-4 text-primary" />
-                <p className="text-xl font-medium mb-2">{currentProject.assets[0].name}</p>
-                <p className="text-sm opacity-75 mb-2">
-                  Duration: {formatTime(currentProject.assets[0].duration || 0)}
-                </p>
-                <div className="text-xs opacity-50">
-                  {currentProject.assets[0].metadata?.width}x{currentProject.assets[0].metadata?.height} • {currentProject.assets[0].metadata?.fps}fps
-                </div>
-              </div>
-            </div>
             
             {/* Play/Pause Overlay */}
             <Button
@@ -249,6 +277,40 @@ const VideoPreview: React.FC = () => {
               ) : (
                 <Play className="w-10 h-10 text-white ml-1" />
               )}
+            </Button>
+
+            {/* Video Info Overlay */}
+            <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm rounded-lg p-3 text-white">
+              <p className="text-sm font-medium mb-1">{currentProject.assets[0].name}</p>
+              <p className="text-xs opacity-75">
+                {formatTime(playheadTime)} / {formatTime(currentProject.assets[0].duration || 0)}
+              </p>
+              <div className="text-xs opacity-50">
+                {currentProject.assets[0].metadata?.width}x{currentProject.assets[0].metadata?.height} • {currentProject.assets[0].metadata?.fps}fps
+              </div>
+            </div>
+
+            {/* Upload Button - Always visible for replacing video */}
+            <Button
+              onClick={async () => {
+                // Trigger file upload
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'video/*';
+                input.onchange = async (e) => {
+                  const file = (e.target as HTMLInputElement).files?.[0];
+                  if (file) {
+                    await handleVideoUpload(file);
+                  }
+                };
+                input.click();
+              }}
+              className="absolute bottom-4 right-4 bg-black/70 hover:bg-black/90 backdrop-blur-sm text-white border border-white/20"
+              variant="ghost"
+              size="sm"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Replace Video
             </Button>
 
             {/* Fullscreen Button */}
