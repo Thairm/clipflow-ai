@@ -54,7 +54,6 @@ interface VideoEditorProps {
 // Video upload helper functions - accessible to all components
 const handleVideoUpload = async (file: File) => {
   const { 
-    currentProject, 
     createProject, 
     addAsset, 
     addClip, 
@@ -90,6 +89,10 @@ const handleVideoUpload = async (file: File) => {
     // Add asset using store function
     const asset = await addAsset(file);
     
+    // Get current project state for updates
+    const state = useVideoStore.getState();
+    const currentProject = state.currentProject;
+    
     // Update asset with video metadata
     updateProject({
       duration: videoMetadata.duration,
@@ -109,8 +112,6 @@ const handleVideoUpload = async (file: File) => {
     });
     
     // Find video track and add clip
-    const state = useVideoStore.getState();
-    const currentProject = state.currentProject;
     if (currentProject) {
       const videoTrack = currentProject.tracks.find(track => track.type === 'video');
       if (videoTrack) {
@@ -452,6 +453,10 @@ const LeftToolbar: React.FC = () => {
                     // Add asset using store function
                     const asset = await addAsset(file);
                     
+                    // Get current project state for updates
+                    const state = useVideoStore.getState();
+                    const currentProject = state.currentProject;
+                    
                     // Update asset with video metadata
                     updateProject({
                       duration: videoMetadata.duration,
@@ -471,8 +476,6 @@ const LeftToolbar: React.FC = () => {
                     });
                     
                     // Find video track and add clip
-                    const state = useVideoStore.getState();
-                    const currentProject = state.currentProject;
                     if (currentProject) {
                       const videoTrack = currentProject.tracks.find(track => track.type === 'video');
                       if (videoTrack) {
