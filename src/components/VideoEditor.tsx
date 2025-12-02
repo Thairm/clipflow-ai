@@ -60,7 +60,8 @@ const handleVideoUpload = async (file: File) => {
     addClip, 
     updateProject,
     addNotification,
-    setPlayheadTime
+    setPlayheadTime,
+    setIsPlaying
   } = useVideoStore();
 
   try {
@@ -86,39 +87,36 @@ const handleVideoUpload = async (file: File) => {
     // Wait briefly for project to be created
     await new Promise(resolve => setTimeout(resolve, 100));
     
-    // Create asset with video URL directly
-    const newAsset = {
-      id: Date.now().toString(),
-      name: file.name,
-      type: 'video',
-      url: videoUrl,
-      duration: videoMetadata.duration,
-      metadata: {
-        width: videoMetadata.width,
-        height: videoMetadata.height,
-        fps: videoMetadata.fps,
-        videoUrl: videoUrl
-      }
-    };
+    // Add asset using store function
+    const asset = await addAsset(file);
     
-    // Add asset directly to project
+    // Update asset with video metadata
     updateProject({
       duration: videoMetadata.duration,
-      assets: [newAsset],
-      tracks: [
-        {
-          id: 'video-track',
-          type: 'video',
-          name: 'V1',
-          clips: [{
-            id: Date.now().toString() + '-clip',
-            assetId: newAsset.id,
-            startTime: 0,
-            endTime: videoMetadata.duration
-          }]
-        }
-      ]
+      assets: currentProject?.assets.map(a => 
+        a.id === asset.id ? {
+          ...a,
+          duration: videoMetadata.duration,
+          metadata: {
+            ...a.metadata,
+            width: videoMetadata.width,
+            height: videoMetadata.height,
+            fps: videoMetadata.fps,
+            videoUrl: videoUrl
+          }
+        } : a
+      ) || []
     });
+    
+    // Find video track and add clip
+    const state = useVideoStore.getState();
+    const currentProject = state.currentProject;
+    if (currentProject) {
+      const videoTrack = currentProject.tracks.find(track => track.type === 'video');
+      if (videoTrack) {
+        addClip(videoTrack.id, asset.id, 0, videoMetadata.duration);
+      }
+    }
     
     // Reset playhead and stop playback
     setPlayheadTime(0);
@@ -253,7 +251,7 @@ const VideoPreview: React.FC = () => {
             <video
               ref={videoRef}
               className="w-full h-full object-contain"
-              src={currentProject.assets[0]?.metadata?.videoUrl || currentProject.assets[0]?.url}
+              src={currentProject.assets[0]?.metadata?.videoUrl || currentProject.assets[0]?.filePath}
               loop
               muted={isMuted}
               controls={false}
@@ -266,7 +264,7 @@ const VideoPreview: React.FC = () => {
               }}
               onError={(e) => {
                 console.error('Video error:', e);
-                console.log('Video URL:', currentProject.assets[0]?.metadata?.videoUrl);
+                console.log('Video URL:', currentProject.assets[0]?.metadata?.videoUrl || currentProject.assets[0]?.filePath);
               }}
             />
             
@@ -394,6 +392,8 @@ const LeftToolbar: React.FC = () => {
   const { 
     currentProject, 
     createProject, 
+    addAsset,
+    addClip,
     updateProject,
     addNotification,
     setPlayheadTime,
@@ -443,39 +443,42 @@ const LeftToolbar: React.FC = () => {
                     
                     const projectName = file.name.replace(/\.[^/.]+$/, "");
                     
-                    // Create asset with video URL directly
-                    const newAsset = {
-                      id: Date.now().toString(),
-                      name: file.name,
-                      type: 'video',
-                      url: videoUrl,
-                      duration: videoMetadata.duration,
-                      metadata: {
-                        width: videoMetadata.width,
-                        height: videoMetadata.height,
-                        fps: videoMetadata.fps,
-                        videoUrl: videoUrl
-                      }
-                    };
+                    // Always create fresh project for clean upload
+                    createProject(projectName, '16:9');
                     
-                    // Update project directly
+                    // Wait briefly for project to be created
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    // Add asset using store function
+                    const asset = await addAsset(file);
+                    
+                    // Update asset with video metadata
                     updateProject({
                       duration: videoMetadata.duration,
-                      assets: [newAsset],
-                      tracks: [
-                        {
-                          id: 'video-track',
-                          type: 'video',
-                          name: 'V1',
-                          clips: [{
-                            id: Date.now().toString() + '-clip',
-                            assetId: newAsset.id,
-                            startTime: 0,
-                            endTime: videoMetadata.duration
-                          }]
-                        }
-                      ]
+                      assets: currentProject?.assets.map(a => 
+                        a.id === asset.id ? {
+                          ...a,
+                          duration: videoMetadata.duration,
+                          metadata: {
+                            ...a.metadata,
+                            width: videoMetadata.width,
+                            height: videoMetadata.height,
+                            fps: videoMetadata.fps,
+                            videoUrl: videoUrl
+                          }
+                        } : a
+                      ) || []
                     });
+                    
+                    // Find video track and add clip
+                    const state = useVideoStore.getState();
+                    const currentProject = state.currentProject;
+                    if (currentProject) {
+                      const videoTrack = currentProject.tracks.find(track => track.type === 'video');
+                      if (videoTrack) {
+                        addClip(videoTrack.id, asset.id, 0, videoMetadata.duration);
+                      }
+                    }
                     
                     // Reset playhead and stop playback
                     setPlayheadTime(0);
