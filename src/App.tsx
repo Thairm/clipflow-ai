@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Homepage from './components/Homepage';
 import Dashboard from './components/Dashboard';
+import VideoEditor from './components/VideoEditor';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Video, 
@@ -507,28 +508,8 @@ const AppInterface: React.FC<{ onBackToHome: () => void; onBackToDashboard: () =
           </TabsContent>
 
           {/* Editor Tab */}
-          <TabsContent value="editor" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Video className="w-5 h-5" />
-                  Video Editor
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <Video className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Professional Timeline Editor</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Advanced video editing with multi-track timeline, effects, and precision controls
-                  </p>
-                  <Button variant="outline">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add to Timeline
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="editor" className="p-0">
+            <VideoEditor onBackToDashboard={onBackToDashboard} />
           </TabsContent>
         </Tabs>
       </div>
