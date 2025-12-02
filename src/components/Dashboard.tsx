@@ -19,7 +19,15 @@ import {
   Clock,
   Star,
   CreditCard,
-  Brain
+  Brain,
+  BookOpen,
+  FileText,
+  HelpCircle,
+  PlayCircle,
+  Lightbulb,
+  Target,
+  Workflow,
+  Zap as ZapIcon
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -342,6 +350,256 @@ const SettingsSection: React.FC = () => {
   );
 };
 
+// Documents Section Component
+const DocumentsSection: React.FC = () => {
+  const documentationSections = [
+    {
+      id: 'getting-started',
+      title: 'Getting Started',
+      icon: PlayCircle,
+      color: 'text-blue-400',
+      bgColor: 'bg-blue-400/10',
+      borderColor: 'border-blue-400/20',
+      items: [
+        'Create your first project',
+        'Upload videos and media',
+        'Understanding the dashboard layout',
+        'Navigating between tools'
+      ]
+    },
+    {
+      id: 'ai-tools',
+      title: 'Using AI Tools',
+      icon: ZapIcon,
+      color: 'text-purple-400',
+      bgColor: 'bg-purple-400/10',
+      borderColor: 'border-purple-400/20',
+      items: [
+        'Auto Clip Generation guide',
+        'Viral Content Analysis tips',
+        'Smart Captions setup',
+        'AI Thumbnails creation'
+      ]
+    },
+    {
+      id: 'video-editing',
+      title: 'Video Editing',
+      icon: Video,
+      color: 'text-green-400',
+      bgColor: 'bg-green-400/10',
+      borderColor: 'border-green-400/20',
+      items: [
+        'Timeline basics',
+        'Multi-track editing',
+        'Effects and transitions',
+        'Export settings'
+      ]
+    },
+    {
+      id: 'tips-tricks',
+      title: 'Tips & Tricks',
+      icon: Lightbulb,
+      color: 'text-orange-400',
+      bgColor: 'bg-orange-400/10',
+      borderColor: 'border-orange-400/20',
+      items: [
+        'Pro editing shortcuts',
+        'AI optimization tips',
+        'Best practices for content',
+        'Troubleshooting common issues'
+      ]
+    }
+  ];
+
+  const quickGuides = [
+    {
+      title: '5-Minute Quick Start',
+      description: 'Get up and running in 5 minutes',
+      time: '5 min read',
+      icon: Clock,
+      buttonText: 'Start Tutorial'
+    },
+    {
+      title: 'AI Tools Mastery',
+      description: 'Master all AI-powered features',
+      time: '15 min read',
+      icon: Brain,
+      buttonText: 'Learn More'
+    },
+    {
+      title: 'Export Like a Pro',
+      description: 'Professional export techniques',
+      time: '10 min read',
+      icon: Target,
+      buttonText: 'Read Guide'
+    }
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Documents & Guides</h2>
+          <p className="text-muted-foreground">Learn how to use ClipFlow AI effectively</p>
+        </div>
+        <Badge variant="secondary" className="flex items-center gap-1">
+          <BookOpen className="w-3 h-3" />
+          12 Articles
+        </Badge>
+      </div>
+
+      {/* Quick Start Guide Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {quickGuides.map((guide, index) => (
+          <motion.div
+            key={guide.title}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+          >
+            <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <guide.icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold mb-1">{guide.title}</h3>
+                    <p className="text-sm text-muted-foreground mb-2">{guide.description}</p>
+                    <span className="text-xs text-muted-foreground">{guide.time}</span>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" className="w-full">
+                  {guide.buttonText}
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Detailed Documentation Sections */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {documentationSections.map((section, index) => (
+          <motion.div
+            key={section.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+          >
+            <Card className={`hover:shadow-lg transition-all duration-300 ${section.borderColor} ${section.bgColor}`}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <section.icon className={`w-5 h-5 ${section.color}`} />
+                  {section.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {section.items.map((item, itemIndex) => (
+                    <div key={itemIndex} className="flex items-center gap-2 text-sm">
+                      <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full" />
+                      <span className="text-muted-foreground">{item}</span>
+                    </div>
+                  ))}
+                </div>
+                <Button variant="outline" size="sm" className="mt-4">
+                  Read Full Guide
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* FAQ Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <HelpCircle className="w-5 h-5" />
+            Frequently Asked Questions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="border-b pb-4 last:border-b-0">
+              <h4 className="font-medium mb-2">How do I start using ClipFlow AI?</h4>
+              <p className="text-sm text-muted-foreground">
+                Simply create an account, upload your first video, and start using our AI tools to enhance your content. 
+                The dashboard provides guided workflows to get you started quickly.
+              </p>
+            </div>
+            <div className="border-b pb-4 last:border-b-0">
+              <h4 className="font-medium mb-2">What video formats are supported?</h4>
+              <p className="text-sm text-muted-foreground">
+                We support all major video formats including MP4, MOV, AVI, and more. 
+                Our AI works best with clear audio and good lighting for optimal results.
+              </p>
+            </div>
+            <div className="border-b pb-4 last:border-b-0">
+              <h4 className="font-medium mb-2">How does the AI credit system work?</h4>
+              <p className="text-sm text-muted-foreground">
+                Each AI feature uses credits based on processing complexity. 
+                Auto-clip generation uses fewer credits than viral analysis. 
+                Monitor your usage in the dashboard.
+              </p>
+            </div>
+            <div className="border-b pb-4 last:border-b-0">
+              <h4 className="font-medium mb-2">Can I export in different resolutions?</h4>
+              <p className="text-sm text-muted-foreground">
+                Yes, choose from 720p, 1080p, or 4K exports. 
+                Higher resolutions use more credits but provide better quality for professional use.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Workflow Diagram */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Workflow className="w-5 h-5" />
+            Typical Workflow
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-blue-400/10 text-blue-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Upload className="w-6 h-6" />
+              </div>
+              <h4 className="font-medium mb-2">1. Upload</h4>
+              <p className="text-sm text-muted-foreground">Upload your source video</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-purple-400/10 text-purple-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                <ZapIcon className="w-6 h-6" />
+              </div>
+              <h4 className="font-medium mb-2">2. AI Process</h4>
+              <p className="text-sm text-muted-foreground">AI analyzes and generates clips</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-green-400/10 text-green-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Video className="w-6 h-6" />
+              </div>
+              <h4 className="font-medium mb-2">3. Edit</h4>
+              <p className="text-sm text-muted-foreground">Fine-tune in the editor</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-orange-400/10 text-orange-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Download className="w-6 h-6" />
+              </div>
+              <h4 className="font-medium mb-2">4. Export</h4>
+              <p className="text-sm text-muted-foreground">Export in desired quality</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 // Main Dashboard Component
 const Dashboard: React.FC<DashboardProps> = ({ onBackToHome, onOpenEditor }) => {
   const [activeSection, setActiveSection] = useState<string>('ai-tools');
@@ -368,6 +626,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onBackToHome, onOpenEditor }) => 
       icon: Sparkles,
       color: 'text-purple-400',
       description: 'Generate videos with AI'
+    },
+    {
+      id: 'documents',
+      label: 'Documents',
+      icon: BookOpen,
+      color: 'text-orange-400',
+      description: 'How to use ClipFlow AI'
     },
     {
       id: 'settings',
@@ -417,6 +682,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onBackToHome, onOpenEditor }) => 
         );
       case 'ai-generation':
         return <AIVideoGenerationSection />;
+      case 'documents':
+        return <DocumentsSection />;
       case 'settings':
         return <SettingsSection />;
       default:
